@@ -5,7 +5,9 @@
 s=$1
 declare -a remaining_time
 declare -a arrival_time
+declare -a fixed_arrival_time
 declare -a completed_at
+declare -a processing_time
 declare -a name
 declare -a out
 declare -a lines
@@ -25,6 +27,25 @@ i=0
 for line in `cut $s -d ',' -f3`
 do
 	remaining_time[i]="$line"
+	i=$((i+1))
+done
+
+
+# Create array with all the inital processing times of the processes
+
+i=0
+for line in `cut $s -d ',' -f3`
+do
+	processing_time[i]="$line"
+	i=$((i+1))
+done
+
+# Create array with all the initial arrival times of the processes
+
+i=0
+for line in `cut $s -d ',' -f2`
+do
+	fixed_arrival_time[i]="$line"
 	i=$((i+1))
 done
 
@@ -97,7 +118,7 @@ done
 
 for i in "${!arrival_time[@]}" 
 do
-	lines[$i]=' '
+	lines[$i]="$i |"
 	for output in ${out[@]} 
 	do
 		if [ "$output" -eq "$i" ]
@@ -115,7 +136,32 @@ do
 	echo $i '|' ${name[i]}
 done
 
+echo
+
+last=$((${#name[@]} - 1))
 for entry in "${lines[@]}"
 do
 	echo $entry
+done
+
+echo
+
+total_tat=0
+total_wt=0
+for i in "${!name[@]}"
+do
+	echo ${name[i]}
+	tat=$((${completed_at[$i]} - ${fixed_arrival_time[$i]} ))
+	wt=$(($tat - ${processing_time[$i]}))	
+	echo 'Turnaround Time: '$tat
+	total_tat=$(( tat + total_tat ))
+	total_wt=$(( total_wt + wt ))
+	echo 'Waiting Time: '$wt
+	echo '----------'
+	
+	if [ $i -eq $last ]
+	then
+		echo 'Average WT '$(( $total_wt / ${#name[@]} ))
+		echo 'Average TAT '$(( $total_tat / ${#name[@]} ))
+	fi
 done
