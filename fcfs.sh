@@ -2,12 +2,13 @@
 
 # Bash FCFS Simulation
 
-s=test.csv
+s=$1
 declare -a remaining_time
 declare -a arrival_time
 declare -a completed_at
 declare -a name
 declare -a out
+declare -a lines
 
 # Create array with all the names of the processes
 
@@ -15,7 +16,6 @@ i=0
 for line in `cut $s -d ',' -f1`
 do
 	name[i]="$line"
-	# echo ${name[i]}
 	i=$((i+1))
 done
 
@@ -25,7 +25,6 @@ i=0
 for line in `cut $s -d ',' -f3`
 do
 	remaining_time[i]="$line"
-	# echo ${remaining_time[i]}
 	i=$((i+1))
 done
 
@@ -35,7 +34,6 @@ i=0
 for line in `cut $s -d ',' -f2`
 do
 	arrival_time[i]="$line"
-	# echo ${arrival_time[i]}
 	i=$((i+1))
 done
 
@@ -54,7 +52,6 @@ do
 				break
 			fi  
 		done)
-	echo $is_done
 	if [ "$is_done" != false ] 
 	then	
 		break
@@ -81,27 +78,44 @@ do
 			i=$((i+1))			
 		done
 	)
+
 	if [ ${arrival_time[nearest_arrival_index]} -gt $current_time ] 
 	then
 		current_time=$((current_time+1))
 		out+=(-1)
 	else
 		current_time=$((current_time+remaining_time[$nearest_arrival_index]))
-		# echo $current_time
 		for ((i=0 ; i < ${remaining_time[nearest_arrival_index]} ; i++ ))
 		do
 			out+=($nearest_arrival_index)
 		done		
 		remaining_time[$nearest_arrival_index]=0
 		completed_at[$nearest_arrival_index]=$current_time
-		
 	fi
 done
 
-for output in ${out[@]} 
+
+for i in "${!arrival_time[@]}" 
 do
-	echo $output
+	lines[$i]=' '
+	for output in ${out[@]} 
+	do
+		if [ "$output" -eq "$i" ]
+		then
+			lines[$i]=${lines[$i]}'+' 
+		else
+			lines[$i]=${lines[$i]}'-'
+		fi	
+	done
 done
 
 
+for i in "${!name[@]}"
+do
+	echo $i '|' ${name[i]}
+done
 
+for entry in "${lines[@]}"
+do
+	echo $entry
+done
