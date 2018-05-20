@@ -1,0 +1,13 @@
+# Scratch
+
+
+for i in "${!arrival_time[@]}";
+do
+	echo $i
+	arrival_time[$i]=$((${arrival_time[i]}+1))
+done
+
+for entry in "${arrival_time[@]}"
+do
+	echo $entry
+done
